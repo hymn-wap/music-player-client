@@ -1,1 +1,56 @@
-test
+<!DOCTYPE html>
+<html>
+<head>
+    <title>登录页面</title>
+    <style>
+        .header {
+            width: 100%;
+            height: 60px;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding-right: 20px;
+        }
+
+        .header button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <button id="loginButton">登录</button>
+    <button id="logoutButton" style="display: none;">登出</button>
+</div>
+
+<div id="content">
+    <!-- 你的页面内容 -->
+</div>
+
+<script>
+    var loginButton = document.getElementById('loginButton');
+    var logoutButton = document.getElementById('logoutButton');
+
+    loginButton.addEventListener('click', function() {
+        // 处理登录操作
+
+        // 一般来说，你需要在这里连接到后端服务器，验证用户名和密码。如果验证通过，隐藏登录按钮，显示登出按钮。
+
+        // 下面的代码只是为了演示，实际应用中不会这样做。
+        loginButton.style.display = 'none';
+        logoutButton.style.display = 'block';
+    });
+
+    logoutButton.addEventListener('click', function() {
+        // 处理登出操作
+
+        // 一般来说，你需要在这里连接到后端服务器，使当前的登录会话无效。如果登出成功，显示登录按钮，隐藏登出按钮。
+
+        // 下面的代码只是为了演示，实际应用中不会这样做。
+        loginButton.style.display = 'block';
+        logoutButton.style.display = 'none';
+    });
+</script>
+</body>
+</html>
