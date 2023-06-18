@@ -1,16 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>登录页面</title>
+    <meta charset="UTF-8">
+    <title>Music</title>
     <style>
         .header {
             width: 100%;
             height: 60px;
             background-color: #f8f9fa;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             align-items: center;
-            padding-right: 20px;
+            padding: 0 20px;
+        }
+
+        .header .input-field {
+            display: flex;
+            align-items: center;
+        }
+
+        .header input[type="text"], .header input[type="password"] {
+            margin-right: 10px;
         }
 
         .header button {
@@ -20,37 +30,86 @@
 </head>
 <body>
 <div class="header">
-    <button id="loginButton">登录</button>
-    <button id="logoutButton" style="display: none;">登出</button>
+    <div id="loginForm">
+        <input id="usernameInput" type="text" placeholder="Username">
+        <input id="passwordInput" type="password" placeholder="Password">
+        <button id="loginButton">Login</button>
+    </div>
+    <div id="userDisplay" style="display: none;">
+        <span id="usernameDisplay"></span>
+        <button id="logoutButton">Logout</button>
+    </div>
+    <button id="session">session</button>
 </div>
 
 <div id="content">
-    <!-- 你的页面内容 -->
+    <!-- otherCodes here -->
 </div>
 
 <script>
     var loginButton = document.getElementById('loginButton');
     var logoutButton = document.getElementById('logoutButton');
-
-    loginButton.addEventListener('click', function() {
-        // 处理登录操作
-
-        // 一般来说，你需要在这里连接到后端服务器，验证用户名和密码。如果验证通过，隐藏登录按钮，显示登出按钮。
-
-        // 下面的代码只是为了演示，实际应用中不会这样做。
-        loginButton.style.display = 'none';
-        logoutButton.style.display = 'block';
+    var sessionButton = document.getElementById('session');
+    loginButton.addEventListener('click', function () {
+        const user = document.getElementById('usernameInput').value;
+        const pwd = document.getElementById('passwordInput').value;
+        // request login api by fetch api
+        fetch('http://localhost:3000/login', {
+            method: 'POST',
+            body: JSON.stringify({username: user, password: pwd}),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => response.json()).then(data => {
+            sessionStorage.setItem('token', data.token);
+            // valid the jwt work
+            fetch('http://localhost:3000/secure-endpoint', {
+                headers: {
+                    'Authorization': sessionStorage.getItem('token')
+                }
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Access granted');
+                } else {
+                    console.log('Access denied');
+                }
+            });
+            loginButton.style.display = 'none';
+            logoutButton.style.display = 'block';
+            var username = document.getElementById('usernameInput').value;
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('usernameDisplay').innerText = 'Logged in as: ' + username;
+            document.getElementById('userDisplay').style.display = 'block';
+        }).catch(error => {
+            alert('You should enter a valid or correct password');
+            console.log('Error:', error)
+        });
     });
 
-    logoutButton.addEventListener('click', function() {
-        // 处理登出操作
-
-        // 一般来说，你需要在这里连接到后端服务器，使当前的登录会话无效。如果登出成功，显示登录按钮，隐藏登出按钮。
-
-        // 下面的代码只是为了演示，实际应用中不会这样做。
+    logoutButton.addEventListener('click', function () {
+        // logout action: remove token
+        sessionStorage.removeItem('token');
         loginButton.style.display = 'block';
         logoutButton.style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('userDisplay').style.display = 'none';
     });
+    sessionButton.addEventListener('click', function () {
+        // test work
+        fetch('http://localhost:3000/secure-endpoint', {
+            headers: {
+                'Authorization': sessionStorage.getItem('token')
+            }
+        }).then(response => {
+            if (response.ok) {
+                console.log('Access granted');
+            } else {
+                console.log('Access denied');
+            }
+        });
+    });
+
+
 </script>
 </body>
 </html>
