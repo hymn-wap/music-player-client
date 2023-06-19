@@ -133,20 +133,23 @@ function handleAddToPlayListAction(sId) {
         });
 }
 
-function handlePlayAction(url) {
-    alert("Play song... " + url)
-    // const mockUrl = 'http://localhost:3000/Still%20Loving%20You-Scorpions.mp3'
-    if (typeof url === 'string' && url.trim().length > 0 && url.endsWith(".mp3")) {
-        const fullUrl = 'http://localhost:3000/' + url;
-        const playerSource = document.getElementById('player');
-        playerSource.setAttribute("src", fullUrl)
-        const playerDiv = document.getElementById('song-player-div');
-        playerDiv.style.display = 'block';
-        // Scroll the entire page to the bottom
-        window.scrollTo(0, document.body.scrollHeight);
-    } else {
-        console.error('Invalid URL');
-    }
+function handlePlayAction(id) {
+    fetch(`http://localhost:3000/songs/${id}/play`)
+    .then(res => res.json())
+    .then(data => togglePlay(data))
+    // alert("Play song... " + url)
+    // // const mockUrl = 'http://localhost:3000/Still%20Loving%20You-Scorpions.mp3'
+    // if (typeof url === 'string' && url.trim().length > 0 && url.endsWith(".mp3")) {
+    //     const fullUrl = 'http://localhost:3000/' + url;
+    //     const playerSource = document.getElementById('player');
+    //     playerSource.setAttribute("src", fullUrl)
+    //     const playerDiv = document.getElementById('song-player-div');
+    //     playerDiv.style.display = 'block';
+    //     // Scroll the entire page to the bottom
+    //     window.scrollTo(0, document.body.scrollHeight);
+    // } else {
+    //     console.error('Invalid URL');
+    // }
 }
 
 function handleRemoveSongAction(sId) {
@@ -276,7 +279,7 @@ window.onload = function(){
                  <td>${s.title}</td>
                  <td>${s.artist}</td>
                  <td>
-                 <button type="button" onclick="handlePlayAction('${s.url}')">play</button>
+                 <button type="button" onclick="handlePlayAction('${s.id}')">play</button>
                  <button type="button" onclick="handleRemoveSongAction(${s.id})">remove from list</button>
                  </td>
             </tr>
