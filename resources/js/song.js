@@ -179,6 +179,28 @@ function handleRemoveSongAction(sId) {
 }
 
 window.onload = function(){
+    const loginFormDiv = document.getElementById('loginForm');
+    const userDisplayDiv = document.getElementById('userDisplay');
+    // const songListDiv = document.getElementById('song-list-div');
+    const playListDiv = document.getElementById('playList-div');
+    // check if user has login
+    if (sessionStorage.getItem("token") && sessionStorage.getItem("userId")) {
+        loginFormDiv.style.display = 'none';
+        userDisplayDiv.style.display = 'block';
+        // show current userName
+        const username = sessionStorage.getItem("userName");
+        document.getElementById('usernameDisplay').innerText = 'Logged in as: ' + username;
+
+        // songListDiv.style.display = 'block';
+        playListDiv.style.display = 'block';
+    } else {
+        loginFormDiv.style.display = 'block';
+        userDisplayDiv.style.display = 'none';
+        // hide other divs
+        // songListDiv.style.display = 'none';
+        playListDiv.style.display = 'none';
+    }
+
     const addButton = document.querySelector('.add-button');
     const songEdit = document.getElementById('song-edit');
     const playerDiv = document.getElementById('song-player-div');
@@ -231,21 +253,24 @@ window.onload = function(){
         });
 
     // load current login user '1' PlayList
-    const playListDiv = document.getElementById('playList-div')
-    // const userId = Storage.get("userKey") // todo
-    fetch('http://localhost:3000/playList' + '/1')
-        .then(response => response.json())
-        .then(playList => {
-            let html = `<tr>
+    const userId = sessionStorage.getItem("userId")
+    console.log("userId = " + userId)
+    // const token = sessionStorage.getItem("token")
+    // console.log("token 111 = " + token)
+    if (userId) {
+        fetch('http://localhost:3000/playList' + '/' + userId)
+            .then(response => response.json())
+            .then(playList => {
+                let html = `<tr>
             <th>Index</th>
             <th>Title</th>
             <th>Artist</th>
             <th>Actions</th>
         </tr>`;
-            playListDiv.setAttribute('playListId', playList.id);
-            let idx = 1;
-            playList.songs.forEach(s => {
-                html += `
+                playListDiv.setAttribute('playListId', playList.id);
+                let idx = 1;
+                playList.songs.forEach(s => {
+                    html += `
             <tr id="row-${s.id}">
                  <td>${idx++}</td> 
                  <td>${s.title}</td>
@@ -256,7 +281,8 @@ window.onload = function(){
                  </td>
             </tr>
             `;
-            })
-            document.getElementById('playList').innerHTML = html;
-        });
+                })
+                document.getElementById('playList').innerHTML = html;
+            });
+    }
 }
