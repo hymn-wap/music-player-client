@@ -1,6 +1,6 @@
 var loginButton = document.getElementById('loginButton');
 var logoutButton = document.getElementById('logoutButton');
-// var sessionButton = document.getElementById('session');
+var testLogin = document.getElementById('logo');
 loginButton.addEventListener('click', function () {
     const user = document.getElementById('usernameInput').value;
     const pwd = document.getElementById('passwordInput').value;
@@ -45,8 +45,8 @@ logoutButton.addEventListener('click', function () {
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('userDisplay').style.display = 'none';
 });
-/*
-sessionButton.addEventListener('click', function () {
+
+testLogin.addEventListener('click', function () {
     // test work
     fetch('http://localhost:3000/secure-endpoint', {
         headers: {
@@ -59,4 +59,4 @@ sessionButton.addEventListener('click', function () {
             console.log('Access denied');
         }
     });
-});*/
+});
