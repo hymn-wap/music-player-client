@@ -32,3 +32,30 @@ tr:nth-child(even) {
 #song-list-div .add-button {
     margin-right: 10px;
 }
+
+/*bruce start*/
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f5f5f5;
+    padding: 20px;
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.1);
+}
+#logo {
+    height: 50px;
+}
+.header div {
+    display: flex;
+    align-items: center;
+}
+.header input, .header button {
+    margin-left: 10px;
+}
+#userDisplay {
+    display: none;
+}
+#usernameDisplay {
+    margin-right: 10px;
+}
+/*bruce end*/
