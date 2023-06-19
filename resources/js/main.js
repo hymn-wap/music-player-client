@@ -12,7 +12,12 @@ loginButton.addEventListener('click', function () {
             'Content-Type': 'application/json',
         }
     }).then(response => {
-        return response.json()
+        if (!response.ok) {
+            return response.text().then(errorText => {
+                throw new Error(errorText);
+            });
+        }
+        return response.json();
     }).then(data => {
         const username = document.getElementById('usernameInput').value;
         sessionStorage.setItem('token', data.token);
@@ -31,14 +36,17 @@ loginButton.addEventListener('click', function () {
                 console.log('Access denied');
             }
         });
-        // loginButton.style.display = 'none';
-        // logoutButton.style.display = 'block';
-        // document.getElementById('loginForm').style.display = 'none';
-        // document.getElementById('usernameDisplay').innerText = 'Logged in as: ' + username;
-        // document.getElementById('userDisplay').style.display = 'block';
+        loginButton.style.display = 'none';
+        logoutButton.style.display = 'block';
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('usernameDisplay').innerText = 'Logged in as: ' + username;
+        document.getElementById('userDisplay').style.display = 'block';
+        playListRestart();
+
+
 
         // Refresh the page --- we will show/hide divs on window.onload function.
-        location.reload();
+        //location.reload();
     }).catch(error => {
         alert('You should enter a valid or correct password');
         console.log('Error:', error)
@@ -55,8 +63,9 @@ logoutButton.addEventListener('click', function () {
     logoutButton.style.display = 'none';
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('userDisplay').style.display = 'none';
+    playListRestart();
     // Refresh the page
-    location.reload();
+    //location.reload();
 });
 
 testLogin.addEventListener('click', function () {
