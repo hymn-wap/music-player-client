@@ -6,7 +6,7 @@ function handleDeleteAction(id) {
     }).then(response => {
         alert('Delete Successfully!');
         // Refresh the page
-        location.reload();
+        playListRestart();
     });
 }
 
@@ -40,21 +40,25 @@ function handleEditAction(id, title, artist, releaseDate) {
     });
 }
 
+let handleFormSubmit = function (event) {
+    event.preventDefault(); // Prevent the default form submission
+    // Call API to save new info
+    const sTitle = document.getElementById('title');
+    const sArtist = document.getElementById('artist');
+    const sReleaseDate = document.getElementById('releaseDate');
+    addSong(sTitle.value, sArtist.value, sReleaseDate.value)
+}
+
 function handleCreateAction() {
     const actionTitle = document.getElementById('action-title');
     const songForm = document.getElementById('song-form');
     const actionSubmit = document.getElementById('action-submit');
     actionTitle.textContent = "Add New Song"
     actionSubmit.textContent = "Submit"
-    songForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
-        // Call API to save new info
-        const sTitle = document.getElementById('title');
-        const sArtist = document.getElementById('artist');
-        const sReleaseDate = document.getElementById('releaseDate');
-        addSong(sTitle.value, sArtist.value, sReleaseDate.value)
-    });
+    songForm.removeEventListener('submit', handleFormSubmit);  // remove the old listener
+    songForm.addEventListener('submit', handleFormSubmit, {once: true});  // add a new listener
 }
+
 
 function editSong(id, title, artist, releaseDate) {
     fetch('http://localhost:3000/songs/' + id, {
@@ -76,7 +80,7 @@ function editSong(id, title, artist, releaseDate) {
             const songEditDiv = document.getElementById('song-edit');
             songEditDiv.style.display = 'none';
             // Refresh the page
-            location.reload();
+            playListRestart();
         });
 }
 
@@ -94,8 +98,7 @@ function addSong(title, artist, releaseDate) {
         })
     }).then(response => {
         response.json()
-    })
-        .then(jsonObj => {
+    }).then(jsonObj => {
             alert('Add Successfully!');
             const songEdit = document.getElementById('song-edit');
             songEdit.style.display = 'none';
@@ -125,7 +128,7 @@ function handleAddToPlayListAction(sId) {
             console.log(jsonObj)
             alert('Add to playList Successfully!');
             // Refresh the page
-            location.reload();
+            playListRestart();
         })
         .catch(error => {
             console.error('An error occurred:', error.message);
@@ -173,7 +176,7 @@ function handleRemoveSongAction(sId) {
             console.log(jsonObj)
             alert('Remove song from playList Successfully!');
             // Refresh the page
-            location.reload();
+            playListRestart();
         })
         .catch(error => {
             console.error('An error occurred:', error.message);
@@ -181,7 +184,9 @@ function handleRemoveSongAction(sId) {
         });
 }
 
-window.onload = function(){
+window.onload = playListRestart;
+
+function playListRestart() {
     const loginFormDiv = document.getElementById('loginForm');
     const userDisplayDiv = document.getElementById('userDisplay');
     // const songListDiv = document.getElementById('song-list-div');
@@ -208,10 +213,10 @@ window.onload = function(){
     const songEdit = document.getElementById('song-edit');
     const playerDiv = document.getElementById('song-player-div');
 
-    addButton.addEventListener('click', function() {
+    addButton.addEventListener('click', function () {
         songEdit.style.display = 'block';
         handleCreateAction()
-    });
+    }, {once: true});
     songEdit.style.display = 'none';
     playerDiv.style.display = 'none';
 
@@ -227,14 +232,6 @@ window.onload = function(){
         </tr>`;
 
             songs.forEach(s => {
-            // const jsonStr = JSON.stringify({
-            //     id: s.id,
-            //     title: `${s.title}`,
-            //     releaseDate: `${s.releaseDate}`,
-            //     artist: `${s.artist}`
-            // });
-            // console.log(jsonStr)
-
                 html += `
             <tr id="row-${s.id}">
                  <td>${s.id}</td> 
@@ -256,24 +253,27 @@ window.onload = function(){
         });
 
     // load current login user '1' PlayList
-    const userId = sessionStorage.getItem("userId")
-    console.log("userId = " + userId)
     // const token = sessionStorage.getItem("token")
     // console.log("token 111 = " + token)
-    if (userId) {
-        fetch('http://localhost:3000/playList' + '/' + userId)
-            .then(response => response.json())
-            .then(playList => {
-                let html = `<tr>
+    fetch('http://localhost:3000/playList', {
+        headers: {
+            'Authorization': sessionStorage.getItem('token')
+        }
+    }).then(response => {
+        console.log("9991919");
+        return response.json()
+    })
+        .then(playList => {
+            let html = `<tr>
             <th>Index</th>
             <th>Title</th>
             <th>Artist</th>
             <th>Actions</th>
         </tr>`;
-                playListDiv.setAttribute('playListId', playList.id);
-                let idx = 1;
-                playList.songs.forEach(s => {
-                    html += `
+            playListDiv.setAttribute('playListId', playList.id);
+            let idx = 1;
+            playList.songs.forEach(s => {
+                html += `
             <tr id="row-${s.id}">
                  <td>${idx++}</td> 
                  <td>${s.title}</td>
@@ -284,8 +284,8 @@ window.onload = function(){
                  </td>
             </tr>
             `;
-                })
-                document.getElementById('playList').innerHTML = html;
-            });
-    }
+            })
+            document.getElementById('playList').innerHTML = html;
+        });
+
 }
