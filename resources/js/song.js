@@ -1,3 +1,207 @@
+var audioPlayer;
+var playPauseButton;
+var seekBar;
+var currentTimeDisplay;
+var durationDisplay;
+var musicTitle;
+var musicTitleMsg;
+
+var currentIndex;
+var myPlaylist;
+var shuffle = false;
+var repeatOnce = false;
+
+function playNow() {
+    
+    if(isShuffle()) {
+        currentIndex = Math.floor(Math.random() * myPlaylist.length);
+    }
+    if(myPlaylist.length > currentIndex) {
+        song = myPlaylist[currentIndex];
+        play(song.url,song.title,currentIndex);
+    }
+}
+
+function isShuffle() {
+    return shuffle;
+}
+
+function isRepeatOnce() {
+    return repeatOnce;
+}
+initPlayerView()
+function initPlayerView() {
+
+    audioPlayer = document.getElementById('audioPlayer');
+    playPauseButton = document.getElementById('playPauseButton');
+    seekBar = document.getElementById('seekBar');
+
+    currentTimeDisplay = document.getElementById('currentTime');
+    durationDisplay = document.getElementById('duration');
+    musicTitle = document.getElementById('musicTitle');
+
+    nextButton = document.getElementById("nextButton");
+    preButton = document.getElementById("preButton");
+
+    var featureButton = document.getElementById('featureButton');
+    featureButton.addEventListener('click', function() {
+        if(featureButton.innerHTML === '<img src="images/repeat-once-on.png">') {
+            featureButton.innerHTML = '<img src="images/shuffle_on.png">';
+            //do shffle function here
+            repeatOnce = false;
+            shuffle = true;
+        } else if(featureButton.innerHTML === '<img src="images/shuffle_on.png">') {
+            featureButton.innerHTML = '<img src="images/repeat.png">';
+            //do repeat all function here
+            repeatOnce = false;
+            shuffle = false;
+        } else {
+            featureButton.innerHTML = '<img src="images/repeat-once-on.png">';
+            // do repeat one function here
+            repeatOnce = true;
+            shuffle = false;
+        }
+    });
+
+    playPauseButton.addEventListener('click', function () {
+        console.log("PPP CLICKED")
+        if (audioPlayer.paused) {
+            audioPlayer.play();
+            playPauseButton.innerHTML = '<img src="images/pause.png">';
+        } else {
+            audioPlayer.pause();
+            playPauseButton.innerHTML = '<img src="images/play.png">';
+        }
+    });
+
+    nextButton.addEventListener('click',function() {
+        next();
+        playNow();
+    });
+
+    preButton.addEventListener('click',function() {
+        prev();
+        if(currentIndex < 0) {
+            currentIndex = 0;
+        }
+        playNow();
+    });
+
+
+
+    durationDisplay.textContent = "00:00";
+
+    audioPlayer.addEventListener('timeupdate', function () {
+        const currentTime = formatTime(audioPlayer.currentTime);
+        currentTimeDisplay.textContent = currentTime;
+
+        musicTitle.textContent = musicTitleMsg;
+
+        const totalDuration = formatTime(audioPlayer.duration);
+        durationDisplay.textContent = totalDuration;
+
+        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        seekBar.value = progress;
+
+        if(audioPlayer.currentTime == audioPlayer.duration) {
+            if(!isRepeatOnce()) {
+                currentIndex = currentIndex + 1;
+            }
+            playNow();
+        }
+
+    });
+
+    audioPlayer.addEventListener('ended', playFromFirstSong);
+
+
+    seekBar.addEventListener('input', function () {
+        const seekTime = (audioPlayer.duration / 100) * seekBar.value;
+        audioPlayer.currentTime = seekTime;
+    });
+}
+
+function playFromFirstSong() {
+    if(currentIndex >= myPlaylist.length) {
+        currentIndex = 0;
+        playNow();
+    }
+}
+
+function next() {
+    console.log("MASD", myPlaylist)
+    if(isShuffle()) {
+        currentIndex = Math.floor(Math.random() * myPlaylist.length);
+    }
+    else {
+        currentIndex = currentIndex + 1;
+    } 
+}
+
+function prev() {
+    if(isShuffle()) {
+        currentIndex = Math.floor(Math.random() * myPlaylist.length);
+    }
+    else {
+        currentIndex = currentIndex - 1;
+    }
+
+    if(currentIndex < 0 ) {
+        currentIndex = 0;
+    }
+}
+
+function formatTime(time) {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${padZero(minutes)}:${padZero(seconds)}`;
+}
+
+function padZero(num) {
+    return num.toString().padStart(2, '0');
+}
+
+function stopAndClearAudio() {
+    var audio = document.getElementById('audioPlayer');
+    audio.pause();
+    audio.currentTime = 0;
+    musicTitleMsg = "No Title"
+}
+
+async function fetchSongs(keyword) {
+    const response = await fetch(baseURL + '/music?search=' + keyword, {
+        headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('my-token')}`
+        }
+    });
+
+    if(response.status != 200) {
+
+    }
+    let songs = await response.json();
+
+    let html = `
+            <tr>
+                <th>Title</th>
+                <th>Release Date</th>
+                <th>Action</th>
+            </tr>
+        `;
+    songs.forEach(song => {
+        html += `
+        <tr>
+            <td>${song.title}</td>
+            <td>${song.releaseDate}</td>
+            <td><a href='#' onclick="addToMyPlaylist('${song.id}')">Add to playlist</a></td>
+        </tr>
+        `;
+        document.getElementById('songs').innerHTML = html;
+    })
+}
+
+var baseURL = "http://localhost:3000/";
+var mp3BaseUrl = "http://localhost:3000/";
+
 function handleDeleteAction(id) {
     // Perform delete action using the song ID
     console.log(`Delete song with ID: ${id}`);
@@ -136,23 +340,22 @@ function handleAddToPlayListAction(sId) {
         });
 }
 
-function handlePlayAction(id) {
-    fetch(`http://localhost:3000/songs/${id}/play`)
-    .then(res => res.json())
-    .then(data => togglePlay(data))
-    // alert("Play song... " + url)
-    // // const mockUrl = 'http://localhost:3000/Still%20Loving%20You-Scorpions.mp3'
-    // if (typeof url === 'string' && url.trim().length > 0 && url.endsWith(".mp3")) {
-    //     const fullUrl = 'http://localhost:3000/' + url;
-    //     const playerSource = document.getElementById('player');
-    //     playerSource.setAttribute("src", fullUrl)
-    //     const playerDiv = document.getElementById('song-player-div');
-    //     playerDiv.style.display = 'block';
-    //     // Scroll the entire page to the bottom
-    //     window.scrollTo(0, document.body.scrollHeight);
-    // } else {
-    //     console.error('Invalid URL');
-    // }
+async function playClick(event,url,title,pIndex) {
+    console.log("mypl", url)
+    event.preventDefault();
+    play(url, title, pIndex)
+}
+
+async function play(url,title,pIndex) {
+    let mp3 = mp3BaseUrl + url;
+    console.log("MP#", url)
+    var audio = document.getElementById("audioPlayer");
+    audio.src = mp3;
+    audio.play();
+    playPauseButton.innerHTML = '<img src="images/pause.png">';
+    musicTitleMsg = title;
+    currentIndex = pIndex;
+    return false;
 }
 
 function handleRemoveSongAction(sId) {
@@ -255,7 +458,7 @@ function playListRestart() {
     // load current login user '1' PlayList
     // const token = sessionStorage.getItem("token")
     // console.log("token 111 = " + token)
-    fetch('http://localhost:3000/playList', {
+    const response = fetch('http://localhost:3000/playList', {
         headers: {
             'Authorization': sessionStorage.getItem('token')
         }
@@ -264,6 +467,7 @@ function playListRestart() {
         return response.json()
     })
         .then(playList => {
+            myPlaylist = playList.songs
             let html = `<tr>
             <th>Index</th>
             <th>Title</th>
@@ -272,18 +476,21 @@ function playListRestart() {
         </tr>`;
             playListDiv.setAttribute('playListId', playList.id);
             let idx = 1;
+            var pIndex = 0;
             playList.songs.forEach(s => {
+                console.log("S", s)
                 html += `
             <tr id="row-${s.id}">
                  <td>${idx++}</td> 
                  <td>${s.title}</td>
                  <td>${s.artist}</td>
                  <td>
-                 <button type="button" onclick="handlePlayAction('${s.id}')">play</button>
+                 <button type="button" onclick="return playClick(event,'${s.url}','${s.title}',${pIndex})">play</button>
                  <button type="button" onclick="handleRemoveSongAction(${s.id})">remove from list</button>
                  </td>
             </tr>
             `;
+            pIndex = pIndex + 1;
             })
             document.getElementById('playList').innerHTML = html;
         });
