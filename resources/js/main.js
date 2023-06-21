@@ -61,9 +61,11 @@ logoutButton.addEventListener('click', function () {
 
     loginButton.style.display = 'block';
     logoutButton.style.display = 'none';
+    myAudioFooter.style.display = 'none'
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('userDisplay').style.display = 'none';
     playListRestart();
+    stopAndClearAudio();
     // Refresh the page
     //location.reload();
 });

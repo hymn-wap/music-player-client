@@ -5,11 +5,13 @@ var currentTimeDisplay;
 var durationDisplay;
 var musicTitle;
 var musicTitleMsg;
+var audioContainer;
 
 var currentIndex;
 var myPlaylist;
 var shuffle = false;
 var repeatOnce = false;
+
 
 function playNow() {
     
@@ -36,6 +38,8 @@ function initPlayerView() {
     playPauseButton = document.getElementById('playPauseButton');
     seekBar = document.getElementById('seekBar');
 
+    audioContainer = document.getElementById('myAudioFooter');
+
     currentTimeDisplay = document.getElementById('currentTime');
     durationDisplay = document.getElementById('duration');
     musicTitle = document.getElementById('musicTitle');
@@ -45,18 +49,18 @@ function initPlayerView() {
 
     var featureButton = document.getElementById('featureButton');
     featureButton.addEventListener('click', function() {
-        if(featureButton.innerHTML === '<img src="images/repeat-once-on.png">') {
-            featureButton.innerHTML = '<img src="images/shuffle_on.png">';
+        if(featureButton.classList == 'fa fa-repeat') {
+            featureButton.classList = 'fa fa-random';
             //do shffle function here
             repeatOnce = false;
             shuffle = true;
-        } else if(featureButton.innerHTML === '<img src="images/shuffle_on.png">') {
-            featureButton.innerHTML = '<img src="images/repeat.png">';
+        } else if(featureButton.classList == 'fa fa-random') {
+            featureButton.classList = 'fa fa-refresh';
             //do repeat all function here
             repeatOnce = false;
             shuffle = false;
         } else {
-            featureButton.innerHTML = '<img src="images/repeat-once-on.png">';
+            featureButton.classList = 'fa fa-repeat';
             // do repeat one function here
             repeatOnce = true;
             shuffle = false;
@@ -64,13 +68,12 @@ function initPlayerView() {
     });
 
     playPauseButton.addEventListener('click', function () {
-        console.log("PPP CLICKED")
         if (audioPlayer.paused) {
             audioPlayer.play();
-            playPauseButton.innerHTML = '<img src="images/pause.png">';
+            playPauseButton.classList = 'fa fa-pause';
         } else {
             audioPlayer.pause();
-            playPauseButton.innerHTML = '<img src="images/play.png">';
+            playPauseButton.classList = 'fa fa-play';
         }
     });
 
@@ -129,7 +132,6 @@ function playFromFirstSong() {
 }
 
 function next() {
-    console.log("MASD", myPlaylist)
     if(isShuffle()) {
         currentIndex = Math.floor(Math.random() * myPlaylist.length);
     }
@@ -200,11 +202,9 @@ async function fetchSongs(keyword) {
 }
 
 var baseURL = "http://localhost:3000/";
-var mp3BaseUrl = "http://localhost:3000/";
 
 function handleDeleteAction(id) {
     // Perform delete action using the song ID
-    console.log(`Delete song with ID: ${id}`);
     fetch('http://localhost:3000/songs/' + id, {
         method: 'DELETE',
     }).then(response => {
@@ -238,7 +238,6 @@ function handleEditAction(id, title, artist, releaseDate) {
     songForm.addEventListener('submit', function (event) {
         event.preventDefault(); // Prevent the default form submission
         // const formData = event.target;
-        // console.log("formData.title.value" + formData.title.value)
         // Call API to save new info
         editSong(id, sTitle.value, sArtist.value, sReleaseDate.value)
     });
@@ -303,6 +302,7 @@ function addSong(title, artist, releaseDate) {
     }).then(response => {
         response.json()
     }).then(jsonObj => {
+        console.log(jsonObj)
             alert('Add Successfully!');
             const songEdit = document.getElementById('song-edit');
             songEdit.style.display = 'none';
@@ -335,24 +335,22 @@ function handleAddToPlayListAction(sId) {
             playListRestart();
         })
         .catch(error => {
-            console.error('An error occurred:', error.message);
             alert('Add to playList Failed!');
         });
 }
 
 async function playClick(event,url,title,pIndex) {
-    console.log("mypl", url)
     event.preventDefault();
+    audioContainer.style.display = 'block';
     play(url, title, pIndex)
 }
 
 async function play(url,title,pIndex) {
-    let mp3 = mp3BaseUrl + url;
-    console.log("MP#", url)
+    let mp3 = baseURL + url;
     var audio = document.getElementById("audioPlayer");
     audio.src = mp3;
     audio.play();
-    playPauseButton.innerHTML = '<img src="images/pause.png">';
+    playPauseButton.classList = 'fa fa-pause';
     musicTitleMsg = title;
     currentIndex = pIndex;
     return false;
@@ -376,13 +374,11 @@ function handleRemoveSongAction(sId) {
         response.json()
     })
         .then(jsonObj => {
-            console.log(jsonObj)
             alert('Remove song from playList Successfully!');
             // Refresh the page
             playListRestart();
         })
         .catch(error => {
-            console.error('An error occurred:', error.message);
             alert('Remove song from playList Failed!');
         });
 }
@@ -457,13 +453,11 @@ function playListRestart() {
 
     // load current login user '1' PlayList
     // const token = sessionStorage.getItem("token")
-    // console.log("token 111 = " + token)
     const response = fetch('http://localhost:3000/playList', {
         headers: {
             'Authorization': sessionStorage.getItem('token')
         }
     }).then(response => {
-        console.log("9991919");
         return response.json()
     })
         .then(playList => {
@@ -478,7 +472,6 @@ function playListRestart() {
             let idx = 1;
             var pIndex = 0;
             playList.songs.forEach(s => {
-                console.log("S", s)
                 html += `
             <tr id="row-${s.id}">
                  <td>${idx++}</td> 
